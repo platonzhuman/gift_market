@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Оформление — Gift Market 38</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="cart">
+  <div data-chrome></div>
+  <main class="page-main">
+    <header class="page-hero">
+      <div class="container">
+        <p class="eyebrow">Checkout · демо</p>
+        <h1 class="display display--lg">Оформление заказа</h1>
+        <p class="lead">Оплата имитируется. Деньги никуда не списываются.</p>
+      </div>
+    </header>
+    <div class="container page-body">
+      <div class="checkout-grid stack" id="checkoutRoot"></div>
+    </div>
+  </main>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chrome.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const root = document.getElementById("checkoutRoot");
+      if (!GM38.state.cart.length) {
+        root.innerHTML = `<div class="empty panel">Корзина пуста. <a class="link-champagne" href="catalog.html">В каталог</a></div>`;
+        return;
+      }
+      const city = GM38.getCity();
+      root.innerHTML = `
+        <form class="panel stack" id="checkoutForm">
+          <div>
+            <label class="field-label" for="name">Имя</label>
+            <input class="field" id="name" name="name" required placeholder="Анна" autocomplete="name" />
+          </div>
+          <div>
+            <label class="field-label" for="phone">Телефон</label>
+            <input class="field" id="phone" name="phone" required placeholder="+7 ..." autocomplete="tel" />
+          </div>
+          <div>
+            <label class="field-label" for="address">Адрес в городе ${city.name}</label>
+            <textarea class="field" id="address" name="address" required placeholder="Улица, дом, квартира"></textarea>
+          </div>
+          <div>
+            <label class="field-label" for="pay">Способ оплаты (демо)</label>
+            <select class="select" id="pay" name="pay">
+              <option value="sbp">СБП</option>
+              <option value="card">Карта</option>
+            </select>
+          </div>
+          <button class="btn btn--primary btn--block" type="submit">Оплатить ${GM38.formatPrice(GM38.cartTotal())}</button>
+        </form>
+        <aside class="panel stack">
+          <h2 class="display display--md">Состав</h2>
+          ${GM38.state.cart.map((i) => {
+            const p = GM38.getProduct(i.productId);
+            return `<div class="row"><span>${p.name} × ${i.qty}</span><span>${GM38.formatPrice(p.price * i.qty)}</span></div>`;
+          }).join("")}
+          <div class="row"><strong>Итого</strong><strong class="price">${GM38.formatPrice(GM38.cartTotal())}</strong></div>
+        </aside>`;
+
+      document.getElementById("checkoutForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const order = GM38.placeOrder({
+          name: fd.get("name"),
+          phone: fd.get("phone"),
+          address: fd.get("address"),
+          payMethod: fd.get("pay"),
+        });
+        if (order) location.href = `success.html?type=cart&id=${encodeURIComponent(order.id)}`;
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Товар — Gift Market 38</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="catalog">
+  <div data-chrome></div>
+  <main class="page-main">
+    <div class="container page-body page-body--pdp">
+      <div id="pdp" class="pdp"></div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__bottom" style="margin-top:0;padding-top:0;border:0">
+        <span>Карточка товара · демо</span>
+        <span>Gift Market 38</span>
+      </div>
+    </div>
+  </footer>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chrome.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const id = new URLSearchParams(location.search).get("id");
+      const product = GM38.getProduct(id);
+      const root = document.getElementById("pdp");
+      if (!product) {
+        root.innerHTML = `<div class="empty">Товар не найден. <a class="link-champagne" href="catalog.html">В каталог</a></div>`;
+        return;
+      }
+      const store = GM38.getStore(product.storeId);
+      const available = product.cities.includes(GM38.state.cityId);
+      document.title = `${product.name} — Gift Market 38`;
+      root.innerHTML = `
+        <div class="pdp__gallery">
+          <img src="${product.image}" alt="${product.name}" width="800" height="840" />
+        </div>
+        <div>
+          <p class="eyebrow">${store ? store.name : "Ателье"} · <span data-city-label></span></p>
+          <h1 class="display display--lg">${product.name}</h1>
+          <p class="lead">${product.desc}</p>
+          <div class="row" style="justify-content:flex-start;gap:10px;margin:20px 0 12px">
+            <div class="price" style="font-size:1.6rem">${GM38.formatPrice(product.price)}</div>
+            <span class="token-pill">${product.tokens} токенов</span>
+          </div>
+          <p class="muted">${available ? "Доступен в выбранном городе" : "Сейчас недоступен в вашем городе — смените город в шапке"}</p>
+          <div class="pdp__actions pdp-sticky">
+            <button class="btn btn--primary btn--block" type="button" id="addBtn" ${available ? "" : "disabled"}>В корзину</button>
+            <a class="btn btn--secondary btn--block" href="weekly.html">Списать токенами на витрине недели</a>
+          </div>
+        </div>`;
+      GM38.updateChrome();
+      document.getElementById("addBtn")?.addEventListener("click", () => GM38.addToCart(product.id, 1));
+    });
+  </script>
+</body>
+</html>

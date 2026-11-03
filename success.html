@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Готово — Gift Market 38</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="home">
+  <div data-chrome></div>
+  <main class="page-main">
+    <div class="container page-body">
+      <div class="success-card stack" id="successRoot"></div>
+    </div>
+  </main>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chrome.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(location.search);
+      const type = params.get("type");
+      const root = document.getElementById("successRoot");
+      if (type === "tokens") {
+        const p = GM38.getProduct(params.get("id"));
+        root.innerHTML = `
+          <p class="eyebrow">Токены списаны</p>
+          <h1>Подарок недели выбран</h1>
+          <p class="muted">${p ? p.name : "Заказ"} · остаток токенов: <strong data-token-balance></strong></p>
+          <p class="muted">В боевой версии магазин получит задачу на сборку и доставку.</p>
+          <a class="btn btn--primary" href="weekly.html">Вернуться к витрине</a>
+          <a class="btn btn--secondary" href="catalog.html">В каталог</a>`;
+      } else {
+        root.innerHTML = `
+          <p class="eyebrow">Демо-оплата прошла</p>
+          <h1>Заказ принят</h1>
+          <p class="muted">Номер: ${params.get("id") || "—"} · город: <span data-city-label></span></p>
+          <p class="muted">Это имитация. Реальные платежи и доставка не запускались.</p>
+          <a class="btn btn--primary" href="catalog.html">Продолжить покупки</a>
+          <a class="btn btn--secondary" href="index.html">На главную</a>`;
+      }
+      GM38.updateChrome();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Подписка — Gift Market 38</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="subscription">
+  <div data-chrome></div>
+  <main class="page-main">
+    <header class="page-hero page-hero--deep">
+      <div class="container page-hero__inner">
+        <div>
+          <p class="eyebrow">Подписка · 1 токен = 100 ₽</p>
+          <h1 class="display display--lg">Токены на подарки</h1>
+          <p class="lead">Выберите тариф. В демо токены начисляются сразу — дальше витрина недели.</p>
+        </div>
+        <div class="token-balance token-balance--hero">
+          <span>Ваш баланс токенов</span>
+          <strong data-token-balance>0</strong>
+          <span id="subMeta"></span>
+        </div>
+      </div>
+    </header>
+    <div class="container page-body">
+      <div class="pricing-grid" id="plans"></div>
+      <div class="stack sub-actions">
+        <button class="btn btn--primary btn--block" type="button" id="buyPlan">Оформить тариф</button>
+        <a class="btn btn--secondary btn--block" href="weekly.html">Перейти к выбору недели</a>
+      </div>
+      <div class="panel panel--note">
+        <h2 class="display display--md">Честно про Старт</h2>
+        <p class="muted" style="margin:12px 0 0">2 490 ₽ = 24 токена. Это примерно 2 мини-букета или 1 средний + мелочь — не 4 больших подарка каждую неделю.</p>
+      </div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__bottom" style="margin-top:0;padding-top:0;border:0">
+        <span>Тарифы из концепции</span>
+        <span>Gift Market 38</span>
+      </div>
+    </div>
+  </footer>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chrome.js"></script>
+  <script>
+    const fromUrl = new URLSearchParams(location.search).get("plan");
+    let selected = fromUrl && GM38.PLANS[fromUrl] ? fromUrl : "start";
+    function render() {
+      const sub = GM38.state.subscription;
+      document.getElementById("subMeta").textContent = sub
+        ? `Активна: ${sub.name} · ${GM38.formatPrice(sub.price)}`
+        : "Подписка ещё не оформлена";
+      document.getElementById("plans").innerHTML = Object.values(GM38.PLANS).map((p) => `
+        <button type="button" class="plan-card ${selected === p.id ? "is-active is-featured" : ""}" data-plan="${p.id}">
+          <div class="plan-card__tag">${p.tag}</div>
+          <h3>${p.name}</h3>
+          <div class="plan-card__price">${GM38.formatPrice(p.price)}</div>
+          <p class="muted" style="margin:8px 0 0">${p.tokens} токенов / период</p>
+        </button>`).join("");
+      document.querySelectorAll("[data-plan]").forEach((btn) => {
+        btn.addEventListener("click", () => { selected = btn.dataset.plan; render(); });
+      });
+      GM38.updateChrome();
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      render();
+      document.getElementById("buyPlan").addEventListener("click", () => {
+        if (!GM38.subscribe(selected)) return;
+        GM38.toast(`Подписка «${GM38.PLANS[selected].name}» оформлена`);
+        render();
+      });
+    });
+  </script>
+</body>
+</html>

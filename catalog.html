@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Коллекция — Gift Market 38</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="catalog" data-reload-on-city="true">
+  <div data-chrome></div>
+  <main class="page-main">
+    <header class="page-hero">
+      <div class="container page-hero__inner">
+        <div>
+          <p class="eyebrow">Коллекция · <span data-city-label></span></p>
+          <h1 class="display display--lg">Цветы и подарки города</h1>
+          <p class="lead">Букеты, открытки и наборы нескольких ателье. Выберите категорию.</p>
+        </div>
+      </div>
+    </header>
+    <div class="container page-body">
+      <div class="chips" id="catChips" role="tablist" aria-label="Категории"></div>
+      <p class="muted result-count" id="resultCount"></p>
+      <div class="product-grid product-grid--catalog" id="catalogGrid"></div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__bottom" style="margin-top:0;padding-top:0;border:0">
+        <span>Gift Market 38 · Flower Atelier</span>
+        <span>демо-ассортимент</span>
+      </div>
+    </div>
+  </footer>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/ui-products.js"></script>
+  <script src="js/chrome.js"></script>
+  <script>
+    let activeCat = new URLSearchParams(location.search).get("cat") || "all";
+    if (!GM38.CATEGORIES.some((c) => c.id === activeCat)) activeCat = "all";
+    function render() {
+      const chips = document.getElementById("catChips");
+      chips.innerHTML = GM38.CATEGORIES.map((c) =>
+        `<button type="button" class="chip ${c.id === activeCat ? "is-active" : ""}" data-cat="${c.id}">${c.name}</button>`
+      ).join("");
+      chips.querySelectorAll("[data-cat]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeCat = btn.dataset.cat;
+          render();
+        });
+      });
+      let list = GM38.productsForCity();
+      if (activeCat !== "all") list = list.filter((p) => p.category === activeCat);
+      document.getElementById("resultCount").textContent = `Найдено: ${list.length}`;
+      const grid = document.getElementById("catalogGrid");
+      grid.innerHTML = list.length
+        ? list.map(GM38.renderProductCard).join("")
+        : `<div class="empty">В этом городе пока нет товаров в категории</div>`;
+      GM38.bindAddButtons(grid);
+    }
+    document.addEventListener("DOMContentLoaded", render);
+  </script>
+</body>
+</html>

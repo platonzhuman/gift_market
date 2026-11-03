@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Корзина — Gift Market 38</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="cart" data-reload-on-city="true">
+  <div data-chrome></div>
+  <main class="page-main">
+    <header class="page-hero">
+      <div class="container">
+        <p class="eyebrow">Корзина · <span data-city-label></span></p>
+        <h1 class="display display--lg">Ваш заказ</h1>
+      </div>
+    </header>
+    <div class="container page-body">
+      <div id="cartRoot" class="stack"></div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__bottom" style="margin-top:0;padding-top:0;border:0">
+        <span>Демо-корзина · localStorage</span>
+        <span>Gift Market 38</span>
+      </div>
+    </div>
+  </footer>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chrome.js"></script>
+  <script>
+    function renderCart() {
+      const root = document.getElementById("cartRoot");
+      if (!GM38.state.cart.length) {
+        root.innerHTML = `<div class="empty panel">Корзина пуста.<br/><br/><a class="btn btn--primary" href="catalog.html">Перейти в каталог</a></div>`;
+        return;
+      }
+      const items = GM38.state.cart.map((item) => {
+        const p = GM38.getProduct(item.productId);
+        if (!p) return "";
+        const store = GM38.getStore(p.storeId);
+        return `
+          <article class="cart-item">
+            <img src="${p.image}" alt="${p.name}" />
+            <div>
+              <div class="product-card__store">${store ? store.name : ""}</div>
+              <h2 class="display" style="font-size:1.15rem;margin:6px 0">${p.name}</h2>
+              <div class="price">${GM38.formatPrice(p.price * item.qty)}</div>
+              <div class="qty">
+                <button type="button" data-qty="${p.id}" data-delta="-1" aria-label="Меньше">−</button>
+                <span>${item.qty}</span>
+                <button type="button" data-qty="${p.id}" data-delta="1" aria-label="Больше">+</button>
+              </div>
+            </div>
+          </article>`;
+      }).join("");
+
+      root.innerHTML = `
+        <div class="panel">${items}</div>
+        <div class="summary stack">
+          <div class="row"><span class="muted">Итого</span><strong class="price">${GM38.formatPrice(GM38.cartTotal())}</strong></div>
+          <p class="muted" style="margin:0;font-size:0.85rem">Делёж после исполнения: 20% платформа · 20% партнёр · 60% магазин</p>
+          <a class="btn btn--primary btn--block" href="checkout.html">К оформлению</a>
+        </div>`;
+
+      root.querySelectorAll("[data-qty]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-qty");
+          const delta = Number(btn.getAttribute("data-delta"));
+          const line = GM38.state.cart.find((i) => i.productId === id);
+          if (!line) return;
+          GM38.setCartQty(id, line.qty + delta);
+          renderCart();
+        });
+      });
+    }
+    document.addEventListener("DOMContentLoaded", renderCart);
+  </script>
+</body>
+</html>

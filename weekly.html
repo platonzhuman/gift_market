@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Витрина недели — Gift Market 38</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="subscription" data-reload-on-city="true">
+  <div data-chrome></div>
+  <main class="page-main">
+    <header class="page-hero page-hero--deep">
+      <div class="container page-hero__inner">
+        <div>
+          <p class="eyebrow">Выбор недели · <span data-city-label></span></p>
+          <h1 class="display display--lg">Потратьте токены</h1>
+          <p class="lead">Подборка недели по городу. Списание с баланса подписки.</p>
+        </div>
+        <div class="token-balance token-balance--hero">
+          <span>Доступно токенов</span>
+          <strong data-token-balance>0</strong>
+          <span>Нет подписки? <a class="link-champagne" href="subscription.html">Оформить</a></span>
+        </div>
+      </div>
+    </header>
+    <div class="container page-body">
+      <div class="product-grid" id="weeklyGrid"></div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__bottom" style="margin-top:0;padding-top:0;border:0">
+        <span>Еженедельная витрина · демо</span>
+        <span>Gift Market 38</span>
+      </div>
+    </div>
+  </footer>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chrome.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const ids = GM38.WEEKLY_PICKS[GM38.state.cityId] || [];
+      const products = ids.map(GM38.getProduct).filter(Boolean);
+      const grid = document.getElementById("weeklyGrid");
+      if (!products.length) {
+        grid.innerHTML = `<div class="empty panel">Нет витрины для города</div>`;
+        return;
+      }
+      grid.innerHTML = products.map((p) => {
+        const store = GM38.getStore(p.storeId);
+        const can = GM38.state.tokenBalance >= p.tokens && !!GM38.state.subscription;
+        return `
+          <article class="product-card">
+            <div class="product-card__img"><img src="${p.image}" alt="${p.name}" loading="lazy" /></div>
+            <div class="product-card__body">
+              <div class="product-card__store">${store ? store.name : ""}</div>
+              <h3>${p.name}</h3>
+              <div class="product-card__meta">${p.short}</div>
+              <div class="product-card__footer">
+                <span class="token-pill">${p.tokens} ток.</span>
+                <button class="btn btn--primary btn--sm" type="button" data-redeem="${p.id}" ${can ? "" : "disabled"}>
+                  Списать
+                </button>
+              </div>
+            </div>
+          </article>`;
+      }).join("");
+
+      grid.querySelectorAll("[data-redeem]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const res = GM38.redeemWithTokens(btn.dataset.redeem);
+          if (!res.ok) {
+            GM38.toast(res.message);
+            return;
+          }
+          location.href = `success.html?type=tokens&id=${encodeURIComponent(btn.dataset.redeem)}`;
+        });
+      });
+    });
+  </script>
+</body>
+</html>
