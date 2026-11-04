@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <script>document.documentElement.classList.add("js");</script>
+    <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5efe4" />
+  <meta name="description" content="Подписка на токены Gift Market 38 — подарки каждую неделю без лишних хлопот." />
   <title>Подписка — Gift Market 38</title>
+  <link rel="preload" href="assets/fonts/Fraunces.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="preload" href="assets/fonts/DMSans.ttf" as="font" type="font/ttf" crossorigin />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 </head>
 <body data-page="subscription">
+  <a class="skip-link" href="#main">Перейти к содержанию</a>
   <div data-chrome></div>
-  <main class="page-main">
+  <main class="page-main" id="main">
     <header class="page-hero page-hero--deep">
       <div class="container page-hero__inner">
         <div>
           <p class="eyebrow">Подписка · 1 токен = 100 ₽</p>
           <h1 class="display display--lg">Токены на подарки</h1>
-          <p class="lead">Выберите тариф. В демо токены начисляются сразу — дальше витрина недели.</p>
+          <p class="lead">Выберите тариф. Токены начисляются сразу — дальше витрина недели.</p>
         </div>
         <div class="token-balance token-balance--hero">
           <span>Ваш баланс токенов</span>
@@ -31,14 +38,14 @@
       </div>
       <div class="panel panel--note">
         <h2 class="display display--md">Честно про Старт</h2>
-        <p class="muted" style="margin:12px 0 0">2 490 ₽ = 24 токена. Это примерно 2 мини-букета или 1 средний + мелочь — не 4 больших подарка каждую неделю.</p>
+        <p class="muted">2 490 ₽ = 24 токена. Это примерно 2 мини-букета или 1 средний + мелочь — не 4 больших подарка каждую неделю.</p>
       </div>
     </div>
   </main>
-  <footer class="site-footer">
+  <footer class="site-footer site-footer--compact">
     <div class="container">
-      <div class="site-footer__bottom" style="margin-top:0;padding-top:0;border:0">
-        <span>Тарифы из концепции</span>
+      <div class="site-footer__bottom">
+        <span>Тарифы подписки</span>
         <span>Gift Market 38</span>
       </div>
     </div>
@@ -48,27 +55,38 @@
   <script src="js/chrome.js"></script>
   <script>
     const fromUrl = new URLSearchParams(location.search).get("plan");
-    let selected = fromUrl && GM38.PLANS[fromUrl] ? fromUrl : "start";
+    let selected = fromUrl && GM38.PLANS[fromUrl]
+      ? fromUrl
+      : (GM38.state.subscription?.planId || "start");
     function render() {
       const sub = GM38.state.subscription;
       document.getElementById("subMeta").textContent = sub
         ? `Активна: ${sub.name} · ${GM38.formatPrice(sub.price)}`
         : "Подписка ещё не оформлена";
       document.getElementById("plans").innerHTML = Object.values(GM38.PLANS).map((p) => `
-        <button type="button" class="plan-card ${selected === p.id ? "is-active is-featured" : ""}" data-plan="${p.id}">
+        <button type="button" class="plan-card ${selected === p.id ? "is-active is-featured" : ""}" data-plan="${p.id}" aria-pressed="${selected === p.id}">
           <div class="plan-card__tag">${p.tag}</div>
           <h3>${p.name}</h3>
           <div class="plan-card__price">${GM38.formatPrice(p.price)}</div>
-          <p class="muted" style="margin:8px 0 0">${p.tokens} токенов / период</p>
+          <p class="plan-card__meta">${p.tokens} токенов / период</p>
         </button>`).join("");
       document.querySelectorAll("[data-plan]").forEach((btn) => {
         btn.addEventListener("click", () => { selected = btn.dataset.plan; render(); });
       });
+      const plan = GM38.PLANS[selected];
+      const samePlan = sub?.planId === selected;
+      const buyBtn = document.getElementById("buyPlan");
+      buyBtn.hidden = !!samePlan;
+      if (!samePlan) buyBtn.textContent = `Оформить «${plan.name}» · ${GM38.formatPrice(plan.price)}`;
       GM38.updateChrome();
     }
     document.addEventListener("DOMContentLoaded", () => {
       render();
       document.getElementById("buyPlan").addEventListener("click", () => {
+        if (GM38.state.subscription?.planId === selected) {
+          GM38.toast("Этот тариф уже активен");
+          return;
+        }
         if (!GM38.subscribe(selected)) return;
         GM38.toast(`Подписка «${GM38.PLANS[selected].name}» оформлена`);
         render();

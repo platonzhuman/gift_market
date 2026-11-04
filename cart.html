@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <script>document.documentElement.classList.add("js");</script>
+    <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5efe4" />
+  <meta name="description" content="Корзина Gift Market 38 — выбранные букеты и подарки." />
   <title>Корзина — Gift Market 38</title>
+  <link rel="preload" href="assets/fonts/Fraunces.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="preload" href="assets/fonts/DMSans.ttf" as="font" type="font/ttf" crossorigin />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 </head>
 <body data-page="cart" data-reload-on-city="true">
+  <a class="skip-link" href="#main">Перейти к содержанию</a>
   <div data-chrome></div>
-  <main class="page-main">
+  <main class="page-main" id="main">
     <header class="page-hero">
       <div class="container">
         <p class="eyebrow">Корзина · <span data-city-label></span></p>
@@ -16,13 +23,13 @@
       </div>
     </header>
     <div class="container page-body">
-      <div id="cartRoot" class="stack"></div>
+      <div id="cartRoot" class="cart-layout"></div>
     </div>
   </main>
-  <footer class="site-footer">
+  <footer class="site-footer site-footer--compact">
     <div class="container">
-      <div class="site-footer__bottom" style="margin-top:0;padding-top:0;border:0">
-        <span>Демо-корзина · localStorage</span>
+      <div class="site-footer__bottom">
+        <span>Корзина · Gift Market 38</span>
         <span>Gift Market 38</span>
       </div>
     </div>
@@ -43,25 +50,37 @@
         const store = GM38.getStore(p.storeId);
         return `
           <article class="cart-item">
-            <img src="${p.image}" alt="${p.name}" />
-            <div>
-              <div class="product-card__store">${store ? store.name : ""}</div>
-              <h2 class="display" style="font-size:1.15rem;margin:6px 0">${p.name}</h2>
-              <div class="price">${GM38.formatPrice(p.price * item.qty)}</div>
+            <img src="${p.image}" alt="${p.name}" width="96" height="120" loading="lazy" />
+            <div class="cart-item__body">
+              <div class="cart-item__head">
+                <div class="product-card__store">${store ? store.name : "Ателье"}</div>
+                <button class="cart-item__remove" type="button" data-remove="${p.id}" aria-label="Удалить ${p.name}">Удалить</button>
+              </div>
+              <h2 class="cart-item__title">${p.name}</h2>
+              <div class="cart-item__price">
+                <span class="price">${GM38.formatPrice(p.price * item.qty)}</span>
+                <span class="muted">${GM38.formatPrice(p.price)} × ${item.qty}</span>
+              </div>
               <div class="qty">
-                <button type="button" data-qty="${p.id}" data-delta="-1" aria-label="Меньше">−</button>
-                <span>${item.qty}</span>
-                <button type="button" data-qty="${p.id}" data-delta="1" aria-label="Больше">+</button>
+                <button type="button" data-qty="${p.id}" data-delta="-1" aria-label="Уменьшить количество">−</button>
+                <span aria-live="polite">${item.qty}</span>
+                <button type="button" data-qty="${p.id}" data-delta="1" aria-label="Увеличить количество">+</button>
               </div>
             </div>
           </article>`;
       }).join("");
 
       root.innerHTML = `
-        <div class="panel">${items}</div>
+        <div class="panel">
+          <div class="panel__head">
+            <h2 class="display display--md">Состав заказа</h2>
+            <span class="muted">${GM38.cartCount()} поз.</span>
+          </div>
+          ${items}
+        </div>
         <div class="summary stack">
           <div class="row"><span class="muted">Итого</span><strong class="price">${GM38.formatPrice(GM38.cartTotal())}</strong></div>
-          <p class="muted" style="margin:0;font-size:0.85rem">Делёж после исполнения: 20% платформа · 20% партнёр · 60% магазин</p>
+          <p class="summary__note">Оплата картой или СБП при оформлении.</p>
           <a class="btn btn--primary btn--block" href="checkout.html">К оформлению</a>
         </div>`;
 
@@ -72,6 +91,14 @@
           const line = GM38.state.cart.find((i) => i.productId === id);
           if (!line) return;
           GM38.setCartQty(id, line.qty + delta);
+          renderCart();
+        });
+      });
+
+      root.querySelectorAll("[data-remove]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          GM38.setCartQty(btn.getAttribute("data-remove"), 0);
+          GM38.toast("Товар удалён из корзины");
           renderCart();
         });
       });

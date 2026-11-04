@@ -196,16 +196,12 @@ GM38.mountChrome = () => {
     });
   });
 
-  const toggle = document.querySelector("[data-nav-toggle]");
-  const panel = document.querySelector("[data-nav-panel]");
-  if (toggle && panel) {
-    toggle.addEventListener("click", () => {
-      const open = panel.classList.toggle("is-open");
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      panel.setAttribute("aria-hidden", open ? "false" : "true");
-      document.body.classList.toggle("nav-open", open);
+  document.querySelectorAll("[data-set-city]").forEach((link) => {
+    link.addEventListener("click", () => {
+      const cityId = link.getAttribute("data-set-city");
+      if (cityId) GM38.setCity(cityId);
     });
-  }
+  });
 
   GM38.updateChrome();
 };

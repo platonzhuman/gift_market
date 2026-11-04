@@ -16,6 +16,11 @@
       return;
     }
 
+    if (!("IntersectionObserver" in window)) {
+      revealNodes.forEach((node) => node.classList.add("is-in", "is-visible"));
+      return;
+    }
+
     revealNodes.forEach((node, index) => {
       node.classList.add("reveal");
       node.style.transitionDelay = `${Math.min(index % 5, 4) * 70}ms`;

@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <script>document.documentElement.classList.add("js");</script>
+    <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5efe4" />
+  <meta name="description" content="Витрина недели Gift Market 38 — подарки, которые можно списать токенами." />
   <title>Витрина недели — Gift Market 38</title>
+  <link rel="preload" href="assets/fonts/Fraunces.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="preload" href="assets/fonts/DMSans.ttf" as="font" type="font/ttf" crossorigin />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 </head>
 <body data-page="subscription" data-reload-on-city="true">
+  <a class="skip-link" href="#main">Перейти к содержанию</a>
   <div data-chrome></div>
-  <main class="page-main">
+  <main class="page-main" id="main">
     <header class="page-hero page-hero--deep">
       <div class="container page-hero__inner">
         <div>
@@ -27,10 +34,10 @@
       <div class="product-grid" id="weeklyGrid"></div>
     </div>
   </main>
-  <footer class="site-footer">
+  <footer class="site-footer site-footer--compact">
     <div class="container">
-      <div class="site-footer__bottom" style="margin-top:0;padding-top:0;border:0">
-        <span>Еженедельная витрина · демо</span>
+      <div class="site-footer__bottom">
+        <span>Еженедельная витрина</span>
         <span>Gift Market 38</span>
       </div>
     </div>
@@ -50,16 +57,17 @@
       grid.innerHTML = products.map((p) => {
         const store = GM38.getStore(p.storeId);
         const can = GM38.state.tokenBalance >= p.tokens && !!GM38.state.subscription;
+        const reason = GM38.state.subscription ? "Не хватает токенов" : "Сначала оформите подписку";
         return `
           <article class="product-card">
-            <div class="product-card__img"><img src="${p.image}" alt="${p.name}" loading="lazy" /></div>
+            <div class="product-card__img"><img src="${p.image}" alt="${p.name}" loading="lazy" width="400" height="500" /></div>
             <div class="product-card__body">
               <div class="product-card__store">${store ? store.name : ""}</div>
               <h3>${p.name}</h3>
               <div class="product-card__meta">${p.short}</div>
               <div class="product-card__footer">
                 <span class="token-pill">${p.tokens} ток.</span>
-                <button class="btn btn--primary btn--sm" type="button" data-redeem="${p.id}" ${can ? "" : "disabled"}>
+                <button class="btn btn--primary btn--sm" type="button" data-redeem="${p.id}" ${can ? "" : "disabled"} title="${can ? "Списать токены" : reason}">
                   Списать
                 </button>
               </div>

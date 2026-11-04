@@ -7,14 +7,15 @@ GM38.renderProductCard = (product) => {
     <a class="product-card__img" href="product.html?id=${encodeURIComponent(product.id)}">
       <img src="${product.image}" alt="${product.name}" loading="lazy" width="400" height="500" />
       <span class="product-card__float">${store ? store.name : "Ателье"}</span>
+      <span class="product-card__go" aria-hidden="true">↗</span>
     </a>
     <div class="product-card__body">
       <div class="product-card__store">${store ? store.name : "Ателье"}</div>
       <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${product.name}</a></h3>
       <div class="product-card__meta">${product.short}</div>
       <div class="product-card__footer">
-        <div>
-          <div class="price">${GM38.formatPrice(product.price)}</div>
+        <div class="product-card__price">
+          <span class="price">${GM38.formatPrice(product.price)}</span>
           <span class="token-pill">${product.tokens} ток.</span>
         </div>
         <button class="btn btn--secondary btn--sm" type="button" data-add="${product.id}">В корзину</button>
